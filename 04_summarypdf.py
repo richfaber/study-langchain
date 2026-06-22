@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 load_dotenv()
 ollama_host = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 
-
 def summarize_txt(file_path: str):
     client = ollama.Client(host=ollama_host)
     
@@ -26,12 +25,14 @@ def summarize_txt(file_path: str):
     { txt }
     '''
 
-    print(system_prompt)
-    print('====================================')
+    # print(system_prompt)
+    # print('====================================')
 
     response = client.chat(
         model="gemma3:4b",
-        options={ "temperature": 0.9 },
+        options={ "temperature": 0.1, "num_ctx": 16384 }, 
+        # num_ctx (컨텐스트 윈도우): 입력 + 출력 생성을 합친 전체 토큰 한도. 물리적으로 가능한 상한선
+        # num_predict (생성 토큰 제한): 모델이 한번에 생성할 수 있는 최대 토큰 수 기본값 -1 (무제한). 내가 원하는 답변의 상한선
         messages= [
             { "role": "system", "content": system_prompt }
         ]
@@ -40,7 +41,7 @@ def summarize_txt(file_path: str):
     return response.message.content 
 
 if __name__ == '__main__':
-    file_path = 'sample.pdf'
+    file_path = 'sample.txt'
 
     summary = summarize_txt(file_path)
     print(summary)
